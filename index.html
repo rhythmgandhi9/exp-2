@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Todo App</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Todo App</h1>
+        
+        <div class="input-section">
+            <input type="text" id="todoInput" placeholder="Enter todo">
+            <button onclick="addTodo()">Add</button>
+        </div>
+        
+        <div class="actions">
+            <button onclick="listTodos()">List Todos</button>
+            <input type="text" id="actionInput" placeholder="Todo to mark/delete">
+            <button onclick="markTodo()">Mark</button>
+            <button onclick="deleteTodo()">Delete</button>
+        </div>
+        
+        <div id="todoList"></div>
+    </div>
+
+    <script>
+        async function addTodo() {
+            const todo = document.getElementById('todoInput').value;
+            if (!todo) return;
+            
+            const response = await fetch('/addtodo', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ todo })
+            });
+            const result = await response.json();
+            alert(result.message);
+            document.getElementById('todoInput').value = '';
+            listTodos();
+        }
+
+        async function deleteTodo() {
+            const todo = document.getElementById('actionInput').value;
+            if (!todo) return;
+            
+            const response = await fetch('/deltodo', {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ todo })
+            });
+            const result = await response.json();
+            alert(result.message);
+            document.getElementById('actionInput').value = '';
+            listTodos();
+        }
+
+        async function markTodo() {
+            const todo = document.getElementById('actionInput').value;
+            if (!todo) return;
+            
+            const response = await fetch('/marktodo', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ todo })
+            });
+            const result = await response.json();
+            alert(result.message);
+            document.getElementById('actionInput').value = '';
+            listTodos();
+        }
+
+        let isListVisible = false;
+
+        async function listTodos() {
+            const todoList = document.getElementById('todoList');
+            
+            if (isListVisible) {
+                todoList.innerHTML = '';
+                isListVisible = false;
+                return;
+            }
+            
+            const response = await fetch('/listtodos');
+            const todos = await response.json();
+            todoList.innerHTML = todos.map((todo, index) => 
+                `<div class="todo-item">${index + 1}. ${todo.todo} ${todo.status}</div>`
+            ).join('');
+            isListVisible = true;
+        }
+    </script>
+</body>
+</html>
